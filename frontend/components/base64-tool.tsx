@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Copy, Upload } from "lucide-react"
+import { Copy, Upload, ArrowLeftRight } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 
 export function Base64Tool() {
+  const [mode, setMode] = useState<"encode" | "decode">("encode")
   const [inputText, setInputText] = useState("")
   const [outputText, setOutputText] = useState("")
   const [error, setError] = useState("")
@@ -37,6 +38,13 @@ export function Base64Tool() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(outputText)
+  }
+
+  const swapMode = () => {
+    setError("")
+    setMode((prev) => (prev === "encode" ? "decode" : "encode"))
+    setInputText(outputText)
+    setOutputText(inputText)
   }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,11 +79,23 @@ export function Base64Tool() {
         <CardDescription>Encode or decode Base64 strings and files</CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="encode">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="encode">Encode</TabsTrigger>
-            <TabsTrigger value="decode">Decode</TabsTrigger>
-          </TabsList>
+        <Tabs value={mode} onValueChange={(value) => setMode(value as "encode" | "decode")}>
+          <div className="flex items-center gap-2">
+            <TabsList className="grid flex-1 grid-cols-2">
+              <TabsTrigger value="encode">Encode</TabsTrigger>
+              <TabsTrigger value="decode">Decode</TabsTrigger>
+            </TabsList>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={swapMode}
+              title="Swap input/output and toggle mode"
+            >
+              <ArrowLeftRight className="h-4 w-4" />
+              <span className="sr-only">Swap encode/decode</span>
+            </Button>
+          </div>
 
           <TabsContent value="encode" className="space-y-4">
             <div className="space-y-2">
