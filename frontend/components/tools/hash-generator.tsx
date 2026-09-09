@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { generateHashes as computeHashes } from "@/lib/hash"
 
 export function HashGenerator() {
   const [input, setInput] = useState("")
@@ -15,19 +16,18 @@ export function HashGenerator() {
     sha256: "",
     sha512: "",
   })
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const generateHashes = async () => {
     if (!input) return
 
-    // In a real implementation, we would use a crypto library
-    // For this demo, we'll just simulate the hashes
-    setHashes({
-      md5: "5d41402abc4b2a76b9719d911017c592",
-      sha1: "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d",
-      sha256: "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
-      sha512:
-        "9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043",
-    })
+    setIsGenerating(true)
+    try {
+      const result = await computeHashes(input)
+      setHashes(result)
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   const copyToClipboard = (text: string) => {
@@ -48,8 +48,8 @@ export function HashGenerator() {
             onChange={(e) => setInput(e.target.value)}
             className="min-h-32"
           />
-          <Button onClick={generateHashes} disabled={!input}>
-            Generate Hashes
+          <Button onClick={generateHashes} disabled={!input || isGenerating}>
+            {isGenerating ? "Generating..." : "Generate Hashes"}
           </Button>
         </div>
 
