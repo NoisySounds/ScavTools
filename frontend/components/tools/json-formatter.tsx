@@ -138,8 +138,17 @@ export function JsonFormatter() {
                 )}
               </Button>
             </div>
-            <div className="bg-muted p-4 rounded-md overflow-x-auto">
-              <pre className="text-sm whitespace-pre-wrap">{output}</pre>
+            <div className="flex bg-muted p-4 rounded-md overflow-x-auto">
+              <pre
+                aria-hidden="true"
+                className="text-sm text-muted-foreground select-none pr-4 mr-4 border-r border-border text-right"
+              >
+                {output
+                  .split("\n")
+                  .map((_, i) => i + 1)
+                  .join("\n")}
+              </pre>
+              <pre className="text-sm whitespace-pre flex-1">{output}</pre>
             </div>
           </div>
         )}
