@@ -16,6 +16,24 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 
+interface ShadowPreset {
+  name: string;
+  horizontalOffset: number;
+  verticalOffset: number;
+  blur: number;
+  spread: number;
+  color: string;
+  opacity: number;
+  inset: boolean;
+}
+
+const SHADOW_PRESETS: ShadowPreset[] = [
+  { name: "Material", horizontalOffset: 0, verticalOffset: 4, blur: 6, spread: -1, color: "#000000", opacity: 20, inset: false },
+  { name: "Soft", horizontalOffset: 0, verticalOffset: 2, blur: 16, spread: 0, color: "#000000", opacity: 10, inset: false },
+  { name: "Hard", horizontalOffset: 4, verticalOffset: 4, blur: 0, spread: 0, color: "#000000", opacity: 100, inset: false },
+  { name: "Neumorphism", horizontalOffset: 8, verticalOffset: 8, blur: 16, spread: 0, color: "#a3b1c6", opacity: 60, inset: false },
+];
+
 export function BoxShadowGenerator() {
   const [horizontalOffset, setHorizontalOffset] = useState(5);
   const [verticalOffset, setVerticalOffset] = useState(5);
@@ -24,6 +42,16 @@ export function BoxShadowGenerator() {
   const [color, setColor] = useState("#000000");
   const [opacity, setOpacity] = useState(20);
   const [inset, setInset] = useState(false);
+
+  const applyPreset = (preset: ShadowPreset) => {
+    setHorizontalOffset(preset.horizontalOffset);
+    setVerticalOffset(preset.verticalOffset);
+    setBlur(preset.blur);
+    setSpread(preset.spread);
+    setColor(preset.color);
+    setOpacity(preset.opacity);
+    setInset(preset.inset);
+  };
 
   // Calculate the shadow value
   const shadowColor = `rgba(${Number.parseInt(
@@ -54,6 +82,23 @@ export function BoxShadowGenerator() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label>Presets</Label>
+            <div className="flex flex-wrap gap-2">
+              {SHADOW_PRESETS.map((preset) => (
+                <Button
+                  key={preset.name}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applyPreset(preset)}
+                >
+                  {preset.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
