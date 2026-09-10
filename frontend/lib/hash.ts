@@ -149,9 +149,13 @@ function hexFromInt32(n: number): string {
   return bytes.map((b) => b.toString(16).padStart(2, "0")).join("")
 }
 
-export function md5(input: string): string {
-  const state = md5Raw(toUtf8Binary(input))
+function md5FromBinaryString(binary: string): string {
+  const state = md5Raw(binary)
   return state.map(hexFromInt32).join("")
+}
+
+export function md5(input: string): string {
+  return md5FromBinaryString(toUtf8Binary(input))
 }
 
 export interface HashResults {
@@ -168,4 +172,21 @@ export async function generateHashes(input: string): Promise<HashResults> {
     sha("SHA-512", input),
   ])
   return { md5: md5(input), sha1, sha256, sha512 }
+}
+
+// Hashes raw file bytes directly (as opposed to `generateHashes`, which
+// treats its input as UTF-8 text) so binary files hash correctly.
+export async function generateHashesFromBuffer(buffer: ArrayBuffer): Promise<HashResults> {
+  const bytes = new Uint8Array(buffer)
+  let binary = ""
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+
+  const [sha1, sha256, sha512] = await Promise.all([
+    crypto.subtle.digest("SHA-1", buffer).then(bytesToHex),
+    crypto.subtle.digest("SHA-256", buffer).then(bytesToHex),
+    crypto.subtle.digest("SHA-512", buffer).then(bytesToHex),
+  ])
+  return { md5: md5FromBinaryString(binary), sha1, sha256, sha512 }
 }
