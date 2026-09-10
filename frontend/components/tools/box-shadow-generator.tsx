@@ -42,6 +42,7 @@ export function BoxShadowGenerator() {
   const [color, setColor] = useState("#000000");
   const [opacity, setOpacity] = useState(20);
   const [inset, setInset] = useState(false);
+  const [previewBg, setPreviewBg] = useState("#f4f4f5");
 
   const applyPreset = (preset: ShadowPreset) => {
     setHorizontalOffset(preset.horizontalOffset);
@@ -195,12 +196,38 @@ export function BoxShadowGenerator() {
         <Card>
           <CardHeader>
             <CardTitle>Preview</CardTitle>
+            <CardDescription>
+              Shadow visibility depends heavily on background contrast — try changing it below.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="flex items-center justify-center p-12">
+          <CardContent className="space-y-4">
             <div
-              className="h-32 w-32 bg-white rounded-md"
-              style={{ boxShadow }}
-            />
+              className="flex items-center justify-center p-12 rounded-md"
+              style={{ backgroundColor: previewBg }}
+            >
+              <div
+                className="h-32 w-32 bg-white rounded-md"
+                style={{ boxShadow }}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="preview-bg" className="shrink-0">
+                Preview Background
+              </Label>
+              <Input
+                id="preview-bg"
+                type="color"
+                value={previewBg}
+                onChange={(e) => setPreviewBg(e.target.value)}
+                className="w-12 p-1 h-10"
+              />
+              <Input
+                type="text"
+                value={previewBg}
+                onChange={(e) => setPreviewBg(e.target.value)}
+                className="flex-1"
+              />
+            </div>
           </CardContent>
         </Card>
 
