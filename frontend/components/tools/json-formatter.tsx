@@ -8,6 +8,25 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+// V8-based engines (Chrome, Node) put the character offset of the syntax
+// error in the message as "...at position N". Convert that offset into a
+// human-readable 1-based line/column pair against the original input.
+function describeJsonError(err: Error, input: string): string {
+  const message = err.message
+  const positionMatch = message.match(/position (\d+)/)
+  if (!positionMatch) {
+    return message
+  }
+
+  const position = Number.parseInt(positionMatch[1], 10)
+  const upToError = input.slice(0, position)
+  const line = upToError.split("\n").length
+  const lastNewline = upToError.lastIndexOf("\n")
+  const column = position - lastNewline
+
+  return `${message} (line ${line}, column ${column})`
+}
+
 export function JsonFormatter() {
   const [input, setInput] = useState("")
   const [output, setOutput] = useState("")
@@ -27,7 +46,7 @@ export function JsonFormatter() {
       const formatted = JSON.stringify(parsed, null, Number.parseInt(indentation))
       setOutput(formatted)
     } catch (err) {
-      setError((err as Error).message)
+      setError(describeJsonError(err as Error, input))
     }
   }
 
@@ -43,7 +62,7 @@ export function JsonFormatter() {
       const minified = JSON.stringify(parsed)
       setOutput(minified)
     } catch (err) {
-      setError((err as Error).message)
+      setError(describeJsonError(err as Error, input))
     }
   }
 
@@ -58,7 +77,7 @@ export function JsonFormatter() {
       JSON.parse(input)
       setOutput("JSON is valid")
     } catch (err) {
-      setError((err as Error).message)
+      setError(describeJsonError(err as Error, input))
     }
   }
 
