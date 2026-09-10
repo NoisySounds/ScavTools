@@ -107,6 +107,7 @@ export function Base64Tool() {
                 onChange={(e) => setInputText(e.target.value)}
                 className="min-h-32"
               />
+              <p className="text-xs text-muted-foreground">{inputText.length} characters</p>
             </div>
 
             <div className="flex items-center gap-2">
@@ -137,6 +138,7 @@ export function Base64Tool() {
                 onChange={(e) => setInputText(e.target.value)}
                 className="min-h-32 font-mono"
               />
+              <p className="text-xs text-muted-foreground">{inputText.length} characters</p>
             </div>
 
             <Button onClick={decodeBase64} disabled={!inputText}>
@@ -158,6 +160,9 @@ export function Base64Tool() {
               <div className="bg-muted p-4 rounded-md overflow-x-auto">
                 <pre className="text-sm whitespace-pre-wrap break-all">{outputText}</pre>
               </div>
+              <p className="text-xs text-muted-foreground">
+                {new TextEncoder().encode(outputText).length} bytes
+              </p>
             </div>
           )}
         </Tabs>
