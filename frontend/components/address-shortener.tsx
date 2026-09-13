@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
 import { validateStarknetAddress, shortenAddress } from "@/lib/starknet-address"
+import { copyTextToClipboard } from "@/lib/clipboard"
 
 const MIN_AFFIX_LENGTH = 2
 const MAX_AFFIX_LENGTH = 20
@@ -19,6 +20,7 @@ export function AddressShortener() {
   const [copied, setCopied] = useState(false)
   const [prefixLength, setPrefixLength] = useState(6)
   const [suffixLength, setSuffixLength] = useState(4)
+  const [copyError, setCopyError] = useState("")
 
   const isValid = address.length > 0 && validateStarknetAddress(address) === null
 
@@ -26,7 +28,7 @@ export function AddressShortener() {
   // immediately as the sliders move, without needing to re-click "Shorten".
   const shortAddress = showResult && isValid ? shortenAddress(address, prefixLength, suffixLength) : ""
 
-  const shortenAddress = () => {
+  const handleShorten = () => {
     try {
       setError("")
 
@@ -42,10 +44,15 @@ export function AddressShortener() {
     }
   }
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(shortAddress)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const copyToClipboard = async () => {
+    setCopyError("")
+    const success = await copyTextToClipboard(shortAddress)
+    if (success) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } else {
+      setCopyError("Couldn't copy to clipboard. Please copy the address manually.")
+    }
   }
 
   return (
@@ -97,7 +104,7 @@ export function AddressShortener() {
           </div>
         </div>
 
-        <Button onClick={shortenAddress} disabled={!isValid}>
+        <Button onClick={handleShorten} disabled={!isValid}>
           Shorten Address
         </Button>
 
@@ -119,6 +126,7 @@ export function AddressShortener() {
                 )}
               </Button>
             </div>
+            {copyError && <p className="mt-2 text-sm text-destructive">{copyError}</p>}
           </div>
         )}
 
