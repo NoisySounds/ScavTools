@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { Plus, X } from "lucide-react";
+import { type ShadowLayer, createShadowLayer, combineShadowLayers } from "@/lib/box-shadow-layers";
 
 interface ShadowPreset {
   name: string;
@@ -35,38 +37,38 @@ const SHADOW_PRESETS: ShadowPreset[] = [
 ];
 
 export function BoxShadowGenerator() {
-  const [horizontalOffset, setHorizontalOffset] = useState(5);
-  const [verticalOffset, setVerticalOffset] = useState(5);
-  const [blur, setBlur] = useState(10);
-  const [spread, setSpread] = useState(0);
-  const [color, setColor] = useState("#000000");
-  const [opacity, setOpacity] = useState(20);
-  const [inset, setInset] = useState(false);
+  const [layers, setLayers] = useState<ShadowLayer[]>([createShadowLayer()]);
+  const [activeLayerIndex, setActiveLayerIndex] = useState(0);
   const [previewBg, setPreviewBg] = useState("#f4f4f5");
 
-  const applyPreset = (preset: ShadowPreset) => {
-    setHorizontalOffset(preset.horizontalOffset);
-    setVerticalOffset(preset.verticalOffset);
-    setBlur(preset.blur);
-    setSpread(preset.spread);
-    setColor(preset.color);
-    setOpacity(preset.opacity);
-    setInset(preset.inset);
+  const activeLayer = layers[activeLayerIndex];
+
+  const updateActiveLayer = (patch: Partial<ShadowLayer>) => {
+    setLayers((prev) => prev.map((layer, i) => (i === activeLayerIndex ? { ...layer, ...patch } : layer)));
   };
 
-  // Calculate the shadow value
-  const shadowColor = `rgba(${Number.parseInt(
-    color.slice(1, 3),
-    16
-  )}, ${Number.parseInt(color.slice(3, 5), 16)}, ${Number.parseInt(
-    color.slice(5, 7),
-    16
-  )}, ${opacity / 100})`;
+  const addLayer = () => {
+    setLayers((prev) => {
+      const next = [...prev, createShadowLayer()];
+      setActiveLayerIndex(next.length - 1);
+      return next;
+    });
+  };
 
-  const boxShadow = `${
-    inset ? "inset " : ""
-  }${horizontalOffset}px ${verticalOffset}px ${blur}px ${spread}px ${shadowColor}`;
+  const removeLayer = (index: number) => {
+    setLayers((prev) => {
+      if (prev.length <= 1) return prev;
+      const next = prev.filter((_, i) => i !== index);
+      setActiveLayerIndex((current) => Math.min(current, next.length - 1));
+      return next;
+    });
+  };
 
+  const applyPreset = (preset: ShadowPreset) => {
+    updateActiveLayer(preset);
+  };
+
+  const boxShadow = combineShadowLayers(layers);
   const cssCode = `box-shadow: ${boxShadow};`;
 
   return (
@@ -80,7 +82,40 @@ export function BoxShadowGenerator() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label>Presets</Label>
+            <div className="flex items-center justify-between">
+              <Label>Layers</Label>
+              <Button type="button" variant="outline" size="sm" onClick={addLayer}>
+                <Plus className="mr-1 h-3 w-3" />
+                Add Layer
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {layers.map((layer, index) => (
+                <Button
+                  key={layer.id}
+                  type="button"
+                  variant={index === activeLayerIndex ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveLayerIndex(index)}
+                  className="gap-2"
+                >
+                  Layer {index + 1}
+                  {layers.length > 1 && (
+                    <X
+                      className="h-3 w-3"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeLayer(index);
+                      }}
+                    />
+                  )}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Presets (applies to selected layer)</Label>
             <div className="flex flex-wrap gap-2">
               {SHADOW_PRESETS.map((preset) => (
                 <Button
@@ -99,53 +134,53 @@ export function BoxShadowGenerator() {
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Horizontal Offset: {horizontalOffset}px</Label>
+                <Label>Horizontal Offset: {activeLayer.horizontalOffset}px</Label>
               </div>
               <Slider
-                value={[horizontalOffset]}
+                value={[activeLayer.horizontalOffset]}
                 min={-50}
                 max={50}
                 step={1}
-                onValueChange={(value) => setHorizontalOffset(value[0])}
+                onValueChange={(value) => updateActiveLayer({ horizontalOffset: value[0] })}
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Vertical Offset: {verticalOffset}px</Label>
+                <Label>Vertical Offset: {activeLayer.verticalOffset}px</Label>
               </div>
               <Slider
-                value={[verticalOffset]}
+                value={[activeLayer.verticalOffset]}
                 min={-50}
                 max={50}
                 step={1}
-                onValueChange={(value) => setVerticalOffset(value[0])}
+                onValueChange={(value) => updateActiveLayer({ verticalOffset: value[0] })}
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Blur Radius: {blur}px</Label>
+                <Label>Blur Radius: {activeLayer.blur}px</Label>
               </div>
               <Slider
-                value={[blur]}
+                value={[activeLayer.blur]}
                 min={0}
                 max={100}
                 step={1}
-                onValueChange={(value) => setBlur(value[0])}
+                onValueChange={(value) => updateActiveLayer({ blur: value[0] })}
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Spread Radius: {spread}px</Label>
+                <Label>Spread Radius: {activeLayer.spread}px</Label>
               </div>
               <Slider
-                value={[spread]}
+                value={[activeLayer.spread]}
                 min={-50}
                 max={50}
                 step={1}
-                onValueChange={(value) => setSpread(value[0])}
+                onValueChange={(value) => updateActiveLayer({ spread: value[0] })}
               />
             </div>
 
@@ -155,33 +190,37 @@ export function BoxShadowGenerator() {
                 <div className="flex">
                   <Input
                     type="color"
-                    value={color}
-                    onChange={(e) => setColor(e.target.value)}
+                    value={activeLayer.color}
+                    onChange={(e) => updateActiveLayer({ color: e.target.value })}
                     className="w-12 p-1 h-10"
                   />
                   <Input
                     type="text"
-                    value={color}
-                    onChange={(e) => setColor(e.target.value)}
+                    value={activeLayer.color}
+                    onChange={(e) => updateActiveLayer({ color: e.target.value })}
                     className="flex-1 ml-2"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Opacity: {opacity}%</Label>
+                <Label>Opacity: {activeLayer.opacity}%</Label>
                 <Slider
-                  value={[opacity]}
+                  value={[activeLayer.opacity]}
                   min={0}
                   max={100}
                   step={1}
-                  onValueChange={(value) => setOpacity(value[0])}
+                  onValueChange={(value) => updateActiveLayer({ opacity: value[0] })}
                 />
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
-              <Switch id="inset" checked={inset} onCheckedChange={setInset} />
+              <Switch
+                id="inset"
+                checked={activeLayer.inset}
+                onCheckedChange={(checked) => updateActiveLayer({ inset: checked })}
+              />
               <Label htmlFor="inset">Inset Shadow</Label>
             </div>
           </div>
