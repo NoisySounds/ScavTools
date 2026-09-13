@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Search, Plus, Edit, Trash2, Copy, Heart, HeartOff, Code } from "lucide-react"
 import { highlightCode } from "@/lib/syntax-highlight"
+import { normalizeTag, hasTag } from "@/lib/normalize-tag"
 
 interface Snippet {
   id: string
@@ -235,10 +236,11 @@ export default function CodeSnippetSaver() {
   }
 
   const addTag = (tagName: string) => {
-    if (tagName && !formData.tags.includes(tagName)) {
+    const normalized = normalizeTag(tagName)
+    if (normalized && !hasTag(formData.tags, normalized)) {
       setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, tagName],
+        tags: [...prev.tags, normalized],
       }))
     }
   }
