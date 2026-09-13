@@ -10,16 +10,20 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { validateBase64 } from "@/lib/base64-validate"
+import { readFileAsBase64 } from "@/lib/base64-file"
 
 export function Base64Tool() {
   const [mode, setMode] = useState<"encode" | "decode">("encode")
   const [inputText, setInputText] = useState("")
   const [outputText, setOutputText] = useState("")
   const [error, setError] = useState("")
+  const [fileName, setFileName] = useState("")
+  const [isDragging, setIsDragging] = useState(false)
 
   const encodeBase64 = () => {
     try {
       setError("")
+      setFileName("")
       const encoded = btoa(inputText)
       setOutputText(encoded)
     } catch (err) {
@@ -56,29 +60,29 @@ export function Base64Tool() {
     setOutputText(inputText)
   }
 
+  const encodeFile = async (file: File) => {
+    try {
+      setError("")
+      const encoded = await readFileAsBase64(file)
+      setFileName(file.name)
+      setInputText("")
+      setOutputText(encoded)
+    } catch (err) {
+      setFileName("")
+      setError((err as Error).message)
+    }
+  }
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (file) encodeFile(file)
+  }
 
-    const reader = new FileReader()
-
-    reader.onload = (event) => {
-      const result = event.target?.result
-      if (typeof result === "string") {
-        // For text files
-        setInputText(result)
-      } else if (result instanceof ArrayBuffer) {
-        // For binary files
-        const bytes = new Uint8Array(result)
-        let binary = ""
-        for (let i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i])
-        }
-        setInputText(binary)
-      }
-    }
-
-    reader.readAsText(file)
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) encodeFile(file)
   }
 
   return (
@@ -123,18 +127,25 @@ export function Base64Tool() {
               <Button onClick={encodeBase64} disabled={!inputText}>
                 Encode to Base64
               </Button>
-              <div className="relative">
-                <Button variant="outline" className="relative">
-                  <input
-                    type="file"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
-                    onChange={handleFileUpload}
-                  />
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload File
-                </Button>
-              </div>
             </div>
+
+            <label
+              onDragOver={(e) => {
+                e.preventDefault()
+                setIsDragging(true)
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleFileDrop}
+              className={`flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-6 text-center cursor-pointer transition-colors ${
+                isDragging ? "border-primary bg-primary/5" : "border-border"
+              }`}
+            >
+              <Upload className="h-6 w-6 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                {fileName ? `Encoded file: ${fileName}` : "Drag and drop a file here, or click to select one (max 10 MB)"}
+              </p>
+              <input type="file" className="hidden" onChange={handleFileUpload} />
+            </label>
           </TabsContent>
 
           <TabsContent value="decode" className="space-y-4">
