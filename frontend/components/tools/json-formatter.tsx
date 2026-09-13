@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CopyJsonButton } from "@/components/tools/copy-json-button"
+import { formatByteSavings } from "@/lib/json-size"
 
 // V8-based engines (Chrome, Node) put the character offset of the syntax
 // error in the message as "...at position N". Convert that offset into a
@@ -32,10 +33,12 @@ export function JsonFormatter() {
   const [output, setOutput] = useState("")
   const [error, setError] = useState("")
   const [indentation, setIndentation] = useState("2")
+  const [savings, setSavings] = useState("")
 
   const formatJson = () => {
     try {
       setError("")
+      setSavings("")
       if (!input) {
         setOutput("")
         return
@@ -54,20 +57,24 @@ export function JsonFormatter() {
       setError("")
       if (!input) {
         setOutput("")
+        setSavings("")
         return
       }
 
       const parsed = JSON.parse(input)
       const minified = JSON.stringify(parsed)
       setOutput(minified)
+      setSavings(formatByteSavings(input, minified))
     } catch (err) {
       setError(describeJsonError(err as Error, input))
+      setSavings("")
     }
   }
 
   const validateJson = () => {
     try {
       setError("")
+      setSavings("")
       if (!input) {
         setOutput("Please enter JSON to validate")
         return
@@ -135,7 +142,10 @@ export function JsonFormatter() {
         {output && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>Result</Label>
+              <div className="flex items-center gap-2">
+                <Label>Result</Label>
+                {savings && <span className="text-xs text-muted-foreground">{savings}</span>}
+              </div>
               <CopyJsonButton value={output} />
             </div>
             <div className="flex bg-muted p-4 rounded-md overflow-x-auto">
