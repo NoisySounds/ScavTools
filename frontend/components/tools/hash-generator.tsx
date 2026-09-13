@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { generateHashes as computeHashes, generateHashesFromBuffer } from "@/lib/hash"
 import { CopyHashButton } from "@/components/tools/copy-hash-button"
+import { isBlank } from "@/lib/is-blank"
 
 const MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024 // 25 MB
 
@@ -26,7 +27,7 @@ export function HashGenerator() {
   const [fileError, setFileError] = useState("")
 
   const generateHashes = async () => {
-    if (!input) return
+    if (isBlank(input)) return
 
     setIsGenerating(true)
     try {
@@ -89,7 +90,7 @@ export function HashGenerator() {
             }}
             className="min-h-32"
           />
-          <Button onClick={generateHashes} disabled={!input || isGenerating}>
+          <Button onClick={generateHashes} disabled={isBlank(input) || isGenerating}>
             {isGenerating ? "Generating..." : "Generate Hashes"}
           </Button>
         </div>
