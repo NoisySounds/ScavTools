@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { JwtTokenHighlight } from "@/components/tools/jwt-token-highlight"
+import { getJwtStructureWarning } from "@/lib/jwt-validate"
 
 function formatDuration(ms: number): string {
   const totalSeconds = Math.floor(Math.abs(ms) / 1000)
@@ -51,10 +52,12 @@ export function JwtDecoder() {
         return
       }
 
-      const parts = jwt.split(".")
-      if (parts.length !== 3) {
-        throw new Error("Invalid JWT format. Expected 3 parts separated by dots.")
+      const structureWarning = getJwtStructureWarning(jwt)
+      if (structureWarning) {
+        throw new Error(structureWarning)
       }
+
+      const parts = jwt.split(".")
 
       // Decode header
       const headerBase64 = parts[0]
