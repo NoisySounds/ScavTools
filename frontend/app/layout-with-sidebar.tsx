@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { usePathname } from "next/navigation";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/tools/app-sidebar";
 import { Footer } from "@/components/footer";
 import { TopBar } from "@/components/top-bar";
 

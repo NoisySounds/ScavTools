@@ -33,6 +33,18 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Tests
+
+Unit tests for the helpers in `lib/` run on Vitest with a jsdom environment.
+
+```bash
+cd frontend
+npm install
+npm test
+```
+
+Use `npm run test:watch` while developing and `npm run test:cov` for a coverage report.
+
 ## Project Structure
 
 ```

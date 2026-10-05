@@ -2,7 +2,7 @@ import type React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/tools/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import LayoutWithConditionalSidebar from "./layout-with-sidebar";
@@ -28,6 +28,7 @@ export default function RootLayout({
           defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
+          storageKey="scavtools-theme"
         >
           <AuthProvider>
             <SidebarProvider>
